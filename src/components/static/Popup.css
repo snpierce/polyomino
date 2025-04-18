@@ -11,65 +11,69 @@
   }
   
   .modal-overlay {
-    animation: fadeIn 0.3s ease forwards;
+    animation: fadeIn 0.2s ease-in-out;
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(121, 116, 116, 0.086); /* Darkened background */
-    /* backdrop-filter: blur(8px); Apply blur to everything behind it */
+    width: 100dvw;
+    height: 100dvh;
+    background-color: rgba(255, 240, 240, 0.402);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
   }
-
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-    background: #00000099;
-    filter: blur(8px);
-  }
-
-.modal-body {
-    margin: 15px;
-    align-items: center;
-}
   
   .modal-main {
     position: fixed;
     background: white;
-    width: 12rem;
-    height: 8rem;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    width: 200%;
+    height: 100%;
+    z-index: 1004;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    border-radius: 20px;
-    color: black;
+    /* justify-content: center;
+    align-items: center; */
+    
     font-weight: bold;
-    z-index: 1001;
+    font-size: 20px;
     text-align: center;
+  }
+
+  .modal-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-top: 10%;
+    font-size: 2rem;
+    font-weight: 1000;
   }
   
   .btn-container {
-    display: flex;
-    justify-content: center; /* Center the button */
-    margin-top: auto; /* Push to the bottom */
-    margin: 6px;
+    position: relative;
+    right: 25%;
+    /* padding: 10%; */
   }
 
-.btn {
-    font-size: 12px;
-    background-color: #73AD21;
-    border-color: black;
-    border-width: 2px;
+  button.btn {
+    position: relative;
+    background: transparent;
+    left: 40%;
+    border: none;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
     color: black;
-}
+  }
+
+  .message {
+    font-weight: 500;
+    font-size: 24px;
+  }
+
+  @media (max-width: 600px) {
+    .modal-main {
+      width: 100vh;
+    }
+  }
