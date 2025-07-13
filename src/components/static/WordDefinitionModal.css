@@ -13,9 +13,28 @@
     font-weight: bold;
   }
 
+  @keyframes slideInFromRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
   @media (max-width: 600px) {
     .def-modal {
       max-width: 100%;
+    }
+
+    .def-modal-main {
+      justify-content: flex-start;
+    }
+
+    .def-modal-body {
+      margin-top: 15%;
     }
   }
   

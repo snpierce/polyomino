@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Modal from './Popup';
 import Game from './Game';
 import { Pieces } from '../types';
@@ -6,40 +6,72 @@ import { MockData } from '../mockData';
 import { OccupiedCellsProvider } from '../OccupiedCellsContext';
 import './static/Game.css';
 import { useGameState } from '../GameStateContext';
+import logo from '../assets/polyomino.png';
 
 const Home: React.FC = () => {
   const [playBoard, setPlayBoard] = useState(new Map());
   const [solutionBoard, setSolutionBoard] = useState(new Map());
   const [pieces, setPieces] = useState<Pieces>([]);
   const [showModal, setShowModal] = useState(false);
-  const [modalData, setModalData] = useState("");
-  const { gameKey, setShowTimer, setGameStarted } = useGameState();
+  const { gameKey, setShowTimer, setGameStarted, time } = useGameState();
+
+  const hasRun = useRef(false);
 
   function toggleModal() {
     setShowModal(!showModal);
   }
 
-  const handleModalData = ( newText: string) => {
-    setModalData(newText);
-    const totalDelay = pieces.length * 0.5 * 1000; // Adjust delay based on number of pieces
-    console.log(totalDelay);
+  const handleModalData = () => {
+    const totalDelay = (pieces.length * 0.2 + 0.5 + 0.8)* 1000; // Adjust delay based on number of pieces
+    
     setTimeout(() => {
       toggleModal();
     }, totalDelay); // 800ms is the duration of the final snap
   }
 
   useEffect(() => {
-    newGame(gameKey);
-    setShowTimer(true);
-    setGameStarted(true);
+    if (!hasRun.current) {
+      newGame(gameKey);
+      setShowTimer(true);
+      setGameStarted(true);
+      hasRun.current = true;
+    }
   }), [];
 
-  useEffect(() => {
-    console.log("Pieces updated: ", pieces);
-  }, [pieces]);
+  // useEffect(() => {
+  //   console.log("Pieces updated: ", pieces);
+  // }, [pieces]);
+
+  // const newGameBackend = (_key: number) => {
+  //   console.log("home remounted");
+  //   const fetchGameData = async () => {
+  //     try {
+  //       const response = await fetch('/api/home');
+  //       if (!response.ok) {
+  //         throw new Error('Failed to fetch game data');
+  //       }
+  //       const data = await response.json();
+
+  //       // Convert the playBoard and solutionBoard into Maps
+  //       const playBoardMap = new Map<string, string>(Object.entries(data.playBoard));
+  //       const solutionBoardMap = new Map<string, string>(Object.entries(data.solutionBoard));
+
+  //       setPlayBoard(playBoardMap);
+  //       setSolutionBoard(solutionBoardMap);
+  //       setPieces(data.pieces);
+
+  //       console.log(data.playBoard, data.solutionBoard, data.pieces);
+  //     } catch (error) {
+  //       console.error('Error fetching game data:', error);
+  //     }
+  //   };
+
+  //   fetchGameData();
+  // };
 
 
   const newGame = (key: number) => {
+
     const mockData = MockData(key);
 
     setPlayBoard(mockData.mockPlayBoard);
@@ -60,11 +92,15 @@ const Home: React.FC = () => {
             {/* {gameFinished && !showModal && <WordDefinitionModal word={selectedWord} />}
           </div> */}
       </div>
-    <Modal open={showModal} onClose={toggleModal}>
+    {showModal && <Modal open={showModal} onClose={toggleModal}>
       <div>
-        {modalData}
+        <img src={logo} alt="Image" style={{ marginTop: "15%", marginBottom: "20px", borderRadius: "10px", border: "2px solid black", position: "relative", height: "110px", width: "110px"}}/>
+        <br/>Congratulations!
+        <div className="message">
+        You finished in {time}.
+        </div>
       </div>
-    </Modal>
+    </Modal>}
     </OccupiedCellsProvider>
   );
 };

@@ -90,6 +90,11 @@ button.new-game {
   height: 4rem;
 }
 
+button.skip {
+  width: 7rem;
+  height: 4rem;
+}
+
 .board-wrapper, .board-container, .cell {
     padding: 0;
     margin: 0;

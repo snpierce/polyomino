@@ -17,7 +17,7 @@ export const WordDefinitionModal: React.FC<{ word: string }> = ({ word }) => {
   
     useEffect(() => {
       const fetchDefinition = async () => {
-        console.log("word: ", word);
+
         if (!definitions.has(word) && word !== "") {
             const url = `https://wordsapiv1.p.rapidapi.com/words/${word}/definitions`;
             const options = {
@@ -27,15 +27,12 @@ export const WordDefinitionModal: React.FC<{ word: string }> = ({ word }) => {
                     'x-rapidapi-host': 'wordsapiv1.p.rapidapi.com'
                 }
             };
-            console.log("word in url: ", word);
             try {
                 const response = await fetch(url, options);
                 const result = await response.json();
-                console.log(result);
                 const definitions = result.definitions;
 
                 if (definitions) {
-                    console.log("def: ", definitions);
                     const locDef = definitions;
                     setDefinition(locDef);
                     setDefinitions(prev => new Map(prev).set(word, locDef));

@@ -24,27 +24,36 @@ const Timer: React.FC<TimerProps> = ({ countDown, startTime, paused }) => {
   };
 
   useEffect(() => {
-    if (countDown && startTime && startTime > 0) {
-      setTime(startTime);
-      startTimestamp.current = Date.now();
-    } else {
-      setTime(0);
-      startTimestamp.current = Date.now();
-    }
-
-    intervalRef.current = window.setInterval(() => {
-      if (!paused && startTimestamp.current !== null) {
-        const elapsed = Date.now() - startTimestamp.current;
-        const newTime = startTime ? Math.max(startTime - elapsed, 0) : elapsed;
-      
-        setTime(newTime);
-        setGameTime(convertTime(newTime)); // <-- update context here
+    if (!paused) {
+      if (countDown && startTime && startTime > 0) {
+        setTime(startTime);
+        startTimestamp.current = Date.now();
+      } else {
+        setTime(0);
+        startTimestamp.current = Date.now();
       }
-    }, 1000);
-
+  
+      intervalRef.current = window.setInterval(() => {
+        if (startTimestamp.current !== null) {
+          const elapsed = Date.now() - startTimestamp.current;
+          const newTime = startTime ? Math.max(startTime - elapsed, 0) : elapsed;
+        
+          setTime(newTime);
+          setGameTime(convertTime(newTime)); // <-- update context here
+        }
+      }, 1000);
+    } else {
+      // Pause: just stop the interval, keep current offset
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+  
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current != null) clearInterval(intervalRef.current);
     };
+  
   }, [countDown, startTime, paused]);
 
   return (

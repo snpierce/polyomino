@@ -1,31 +1,31 @@
-import React, { ReactElement } from "react";
-import logo from '../assets/polyomino.png';
+import React, { ReactElement, useState } from "react";
 import './static/Popup.css';
-import { useGameState } from "../GameStateContext";
 
 interface ModalProps {
-    open: boolean;
     onClose: () => void;
+    open: boolean;
     children: ReactElement;
   }
   
 
   export default function Modal(props: ModalProps): ReturnType<React.FC> {
-    const { time } = useGameState();
+    const [isVisible, setIsVisible] = useState(true);
 
-    return (props.open && 
-        <div className="modal-main">
+    const handleClose = () => {
+      setIsVisible(false);
+      // console.log("closing");
+      setTimeout(props.onClose, 500); // Match with CSS animation duration
+    };
+
+    return (
+        <div className={`modal-main ${isVisible ? 'slide-in': 'slide-out'}`}>
           <div className="btn-container">
-            <button className="btn" onClick={props.onClose}>
+            <button className="btn" onClick={handleClose}>
               Back to puzzle X
             </button>
           </div>
-          <div className="modal-body">
-            <img src={logo} alt="Image" style={{ marginBottom: "20px", borderRadius: "10px", border: "2px solid black", position: "relative", height: "110px", width: "110px"}}/>
+          <div className="modal-body">           
             {props.children}
-            <div className="message">
-              You finished in {time}.
-            </div>
           </div>
         </div>
     );

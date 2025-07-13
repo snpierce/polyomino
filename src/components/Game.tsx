@@ -42,8 +42,32 @@ const DraggablePiece: React.FC <{pieceData: [Piece, Pos], index: number, playBoa
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
+  const boardElement = document.querySelector(".board-wrapper") as HTMLElement;
+
+  function isInsideVisibleGrid(x: number, y: number): boolean {
+    if (!boardElement) return false;
+  
+    const rect = boardElement.getBoundingClientRect();
+    // console.log(rect.left, rect.right);
+  
+    const visibleMinY = -rect.left / (CELL_SIZE * scale);
+    const visibleMaxY = (window.innerWidth - rect.left) / (CELL_SIZE * scale);
+  
+    const visibleMinX = -rect.top / (CELL_SIZE * scale);
+    const visibleMaxX = (window.innerHeight - rect.top) / (CELL_SIZE * scale);
+    
+    return x >= visibleMinX && x < visibleMaxX && y >= visibleMinY && y < visibleMaxY;
+  }
+
+
   // Function to check if the target position is free
   const isPositionFree = (gridX: number, gridY: number) => {
+    if (gridX === -1 && (gridY === 1 || gridY === 2)){
+      return false;
+    }
+
+    if (!isInsideVisibleGrid(gridX, gridY)) { return false;}
+
     const cells = renderPieceCells(piece, [gridX, gridY]);
     const oldCells = renderPieceCells(piece, [currPos.x, currPos.y]);
 
@@ -60,6 +84,7 @@ const DraggablePiece: React.FC <{pieceData: [Piece, Pos], index: number, playBoa
   
     return isFree;  // Returns true if all cells are free
   };
+
 
   const renderPieceCells = (piece: Piece, [x, y]: Pos) => {
     const cells: [number, number][] = [];
@@ -120,9 +145,6 @@ const DraggablePiece: React.FC <{pieceData: [Piece, Pos], index: number, playBoa
 
   const outlineColor = pieceColors[index % pieceColors.length];
 
-  // const hasNeighbor = (x: number, y: number) => {
-  //   return new Set(cells.map(([cx, cy]) => `${cx},${cy}`)).has(`${x},${y}`);
-  // };
 
   return (  
   <Draggable
@@ -132,13 +154,16 @@ const DraggablePiece: React.FC <{pieceData: [Piece, Pos], index: number, playBoa
     position={position}
     onStop={(_e, data) => {
       const snappedY = Math.round(data.x / (CELL_SIZE)) * (CELL_SIZE);
-      const snappedX = Math.round(data.y / (CELL_SIZE)) * (CELL_SIZE);
+      const tempSnappedX = Math.round(data.y / (CELL_SIZE)) * (CELL_SIZE);
       
-      const gridX = snappedX / (CELL_SIZE) +offset.x;
+      const tempX = tempSnappedX / (CELL_SIZE) +offset.x;
       const gridY = snappedY / (CELL_SIZE) +offset.y;
 
-      // Only snap if the position is free
+      const gridX = (tempX < -1) ? -1 : tempX;
+      const snappedX = (tempX < -1) ? -102 : tempSnappedX;
 
+      // Only snap if the position is free
+      // console.log(tempSnappedX, snappedY, gridX, gridY);
       if (isPositionFree(gridX, gridY)) {
         const oldCells = renderPieceCells(piece, [currPos.x, currPos.y]);
         const newCells = renderPieceCells(piece, [gridX, gridY]);
@@ -161,8 +186,7 @@ const DraggablePiece: React.FC <{pieceData: [Piece, Pos], index: number, playBoa
         setCurrPos({ x: gridX, y: gridY });
         setOccupiedCells(tempMap);
       } else {
-        // console.log(gridX, gridY);
-        // console.log(occupiedCells);
+
         setPosition({ x: position.x, y: position.y }); // Revert if occupied
       }
     }}
@@ -178,13 +202,6 @@ const DraggablePiece: React.FC <{pieceData: [Piece, Pos], index: number, playBoa
         const cellText = playBoard.get(positionKey) || 'X';
         const allowEvents = gameFinished ? "none" : "auto";
 
-        // const borderStyles = {
-        //   borderTop: `2px solid ${hasNeighbor(x - 1, y) ? outlineColor : 'black'}`,
-        //   borderBottom: `2px solid ${hasNeighbor(x + 1, y) ? outlineColor : 'black'}`,
-        //   borderLeft: `2px solid ${hasNeighbor(x, y - 1) ? outlineColor : 'black'}`,
-        //   borderRight: `2px solid ${hasNeighbor(x, y + 1) ? outlineColor : 'black'}`,
-        // };
-
         return (
           <div
             key={index}
@@ -194,7 +211,6 @@ const DraggablePiece: React.FC <{pieceData: [Piece, Pos], index: number, playBoa
               left: y * (CELL_SIZE),
               pointerEvents: allowEvents,
               backgroundColor: outlineColor,
-              // ...borderStyles,
             }}
           >
             {cellText} {/* Render the text in the cell */}
@@ -298,7 +314,7 @@ const Game: React.FC<GameProps> = ({ playBoard, playPieces, solutionBoard, newGa
     // Transform solution board into map format
     if (solutionBoard.size === occupiedCells.size &&
       [...solutionBoard.entries()].every(([key, letter]) => occupiedCells.get(key) === letter)) {
-      onModalChange("Congratulations!");
+      onModalChange();
       setTimerPaused(true);
       setGameFinished(true);
       setGameStarted(false);
@@ -322,7 +338,7 @@ const Game: React.FC<GameProps> = ({ playBoard, playPieces, solutionBoard, newGa
                 resetOccupiedCells(); 
                 newGame(gameKey);  
                 setGameFinished(false); 
-                setGameKey(prevKey => prevKey + 1);
+                setGameKey(prevKey => prevKey + 2);
                 setTimerKey(prev => prev + 1); 
                 setShowTimer(true); 
                 setTimerPaused(false); 
@@ -334,7 +350,26 @@ const Game: React.FC<GameProps> = ({ playBoard, playPieces, solutionBoard, newGa
               New Game
             </button> }
 
-        {gameStarted && !gameFinished && <button className="check-btn" onClick={checkSolution} style={{ height: "4rem", width: "7rem" }}>Check</button>}
+        {gameStarted && !gameFinished && 
+          <>
+          <button className="check-btn" onClick={checkSolution} style={{ height: "4rem", width: "7rem" }}>Check</button>
+          <button 
+            className="skip"
+            onClick={() => { 
+              resetOccupiedCells(); 
+              newGame(gameKey);  
+              setGameFinished(false); 
+              setGameKey(prevKey => prevKey + 2);
+              setTimerKey(prev => prev + 1); 
+              setShowTimer(true); 
+              setTimerPaused(false); 
+              setSelectedWord("");
+              setGameStarted(true);
+            }} 
+            style={{ borderColor: 'black' }}
+          >
+            Skip
+          </button> </>}
         </div>
 
         <BoardGrid 
