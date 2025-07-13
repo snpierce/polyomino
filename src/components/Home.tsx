@@ -13,7 +13,7 @@ const Home: React.FC = () => {
   const [solutionBoard, setSolutionBoard] = useState(new Map());
   const [pieces, setPieces] = useState<Pieces>([]);
   const [showModal, setShowModal] = useState(false);
-  const { gameKey, setShowTimer, setGameStarted, time } = useGameState();
+  const { setGameKey, gameKey, setShowTimer, setGameStarted, time } = useGameState();
 
   const hasRun = useRef(false);
 
@@ -73,6 +73,9 @@ const Home: React.FC = () => {
   const newGame = (key: number) => {
 
     const mockData = MockData(key);
+    setGameKey(key + 2);
+
+    console.log(mockData);
 
     setPlayBoard(mockData.mockPlayBoard);
     setSolutionBoard(mockData.mockSolutionBoard);
